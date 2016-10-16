@@ -70,11 +70,12 @@ function getPeopleInfo(person, cb) {
     cleanedName += word.charAt(0).toUpperCase() + word.slice(1, word.length)+" ";
   });
 
-  var API_URL = 'http://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&exintro=&explaintext=&&titles='+encodeURI(cleanedName);
+  var API_URL = 'http://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&exintro=&explaintext=&titles='+encodeURI(cleanedName);
   request(API_URL, function(err, response, data){
 
     if (err) return cb(err);
     if (data) {
+
       var json = JSON.parse(data);
       var pages = json.query.pages;
       var summary = '';
@@ -82,7 +83,9 @@ function getPeopleInfo(person, cb) {
         summary = pages[key].extract;
       });
 
-      return cb(null, summary);
+      var parags = (summary.split("\n"));
+
+      return cb(null, parags[0]);
     }
 
   });
