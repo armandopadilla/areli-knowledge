@@ -4,18 +4,35 @@ var app = express();
 var APPID = "5HW2GQ-AQ3U8978VQ";
 var wolfram = require('wolfram-alpha').createClient(APPID);
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); // for parsing application/json
 
 app.post('/v1/areli-knowledge', function(req, res){
-
-  var jsonPaylod = req.params.body;
-  var action = jsonPayload.action;
+  
+  var jsonPayload = req.body;
+  var action = jsonPayload.result.action;
 
   if (action === 'get.city.time') {
-    getTime(parameters); //pass in the city only.
+	var city = jsonPayload.result.parameters.city;
+	getTime(city, function(err, time){
+
+		var response = {
+        	"speech": "It's currently "+time+" in "+city,
+        	"displayText": "It's currently "+time+" in "+city,
+        	"data": "It's currently "+time+" in "+city,
+        	"contextOut": [],
+        	"source": "Areli"
+  		}	
+
+	
+		res.json(response);
+
+	});
   }
   else {
     //do something
   }
+
 
 });
 
