@@ -1,16 +1,32 @@
+/**
+ * Glue that combines the input sent in from API.ai
+ * and the knowledge.  The "knowledge" is the site that contains
+ * the algos that provide what the user has requested.  For example,
+ * if we want to know about the weather, we go to weather.com since that is the
+ * neuron that contains the knowledge. Get it?
+ *
+ *
+ * @type {*|exports|module.exports}
+ */
 var express = require('express');
 var app = express();
-
 var bodyParser = require('body-parser');
-app.use(bodyParser.json()); // for parsing application/json
+var request = require('request');
 
+app.use(bodyParser.json());
 
 // Wolfram Alpha
 var APPID = "5HW2GQ-AQ3U8978VQ";
 var wolfram = require('wolfram-alpha').createClient(APPID);
 
-var request = require('request');
 
+/**
+ * Listens for incoming request from the API.ai platform.
+ * This is called once API.ai has parsed the request from the user.
+ *
+ * Strategy.
+ *
+ */
 app.post('/v1/areli-knowledge', function(req, res){
   
   var jsonPayload = req.body;
@@ -51,12 +67,11 @@ app.post('/v1/areli-knowledge', function(req, res){
 
   }
 
-
 });
 
 /**
  * Get info on a specific person in history.
- * Or that
+ *
  */
 function getPeopleInfo(person, cb) {
 
@@ -141,8 +156,6 @@ app.get('/v1/areli-knowledge/people', function(req, res){
   });
 
 });
-
-
 
 app.listen(3001, function(){
   console.log("Listening on 3001...");
