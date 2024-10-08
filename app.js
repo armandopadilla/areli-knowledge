@@ -29,6 +29,7 @@ var wolfram = require('wolfram-alpha').createClient(APPID);
  */
 app.post('/v1/areli-knowledge', function(req, res){
   
+  // Handles HTTP POST requests to a specified endpoint.
   var jsonPayload = req.body;
   var action = jsonPayload.result.action;
 
@@ -37,6 +38,7 @@ app.post('/v1/areli-knowledge', function(req, res){
     var city = jsonPayload.result.parameters.city;
     getTime(city, function(err, time) {
 
+      // Gets current time for a specific city.
       var response = {
         	"speech": "It's currently "+time+" in "+city,
         	"displayText": "It's currently "+time+" in "+city,
@@ -53,6 +55,7 @@ app.post('/v1/areli-knowledge', function(req, res){
     var person = jsonPayload.result.parameters.person;
     getPeopleInfo(person, function(err, summary) {
 
+      // Gets information about a person.
       var response = {
         "speech": summary,
         "displayText": summary,
@@ -70,8 +73,17 @@ app.post('/v1/areli-knowledge', function(req, res){
 });
 
 /**
- * Get info on a specific person in history.
+ * @description Fetches a person's Wikipedia summary, cleans their name to title case,
+ * and returns the first paragraph of the summary.
  *
+ * @param {string | number | object | undefined | null} person - Used to specify the
+ * name of a person to retrieve information about.
+ *
+ * @param {(error | string)} cb - A callback function used to return results or error
+ * messages to the caller.
+ *
+ * @returns {string | (string[]) | null} The first paragraph of a Wikipedia article
+ * summary.
  */
 function getPeopleInfo(person, cb) {
 
@@ -82,12 +94,14 @@ function getPeopleInfo(person, cb) {
   person = person.toLowerCase();
   var personWords = person.split(" ");
   personWords.forEach(function(word){
+    // Capitalizes the first letter of each word in the cleanedName string.
     cleanedName += word.charAt(0).toUpperCase() + word.slice(1, word.length)+" ";
   });
 
   var API_URL = 'http://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&exintro=&explaintext=&titles='+encodeURI(cleanedName);
   request(API_URL, function(err, response, data){
 
+    // Parses Wikipedia API response.
     if (err) return cb(err);
     if (data) {
 
@@ -95,6 +109,7 @@ function getPeopleInfo(person, cb) {
       var pages = json.query.pages;
       var summary = '';
       Object.keys(pages).forEach(function(key) {
+        // Executes for each key in the pages object.
         summary = pages[key].extract;
       });
 
@@ -109,19 +124,29 @@ function getPeopleInfo(person, cb) {
 
 
 /**
- * Fetch the time for a specific city.
+ * @description Queries the Wolfram Alpha API to retrieve the current time in a
+ * specified city, parses the response to extract the time data, and returns it as a
+ * string to the callback function.
  *
- * @param city
+ * @param {string} city - Represented as the location for which the current time is
+ * to be retrieved.
+ *
+ * @param {(error, result) => void} cb - Invoked when the function has completed
+ * execution, passing the result as an argument.
+ *
+ * @returns {string} The current time in the specified city.
  */
 function getTime(city, cb) {
 
   var query = "What time is it in "+city;
   wolfram.query(query, function (err, result) {
+    // Executes a Wolfram Alpha query.
     if (err) throw err;
 
     //Parse out the time data.
     var responseData = '';
     result.forEach(function(item) {
+      // Iterates through an array of items,
       if (item.title == 'Result') {
         var data = item.subpods[0].text;
         var timeElem = data.split("|");
@@ -141,8 +166,10 @@ function getTime(city, cb) {
  */
 app.get('/v1/areli-knowledge/time', function(req, res){
 
+  // Handles HTTP GET requests to retrieve time information for a specified city.
   var city = req.query.city;
   getTime(city, function(err, time){
+    // Calls a callback with error and result.
     res.send(time);
   });
 
@@ -150,13 +177,16 @@ app.get('/v1/areli-knowledge/time', function(req, res){
 
 app.get('/v1/areli-knowledge/people', function(req, res){
 
+  // Handles HTTP GET requests to the '/v1/areli-knowledge/people' endpoint.
   var person = req.query.person;
   getPeopleInfo(person, function(err, summary){
+    // Calls a callback with two parameters: an error and a summary.
     res.send(summary);
   });
 
 });
 
 app.listen(3001, function(){
+  // Listens for incoming connections on port 3001.
   console.log("Listening on 3001...");
 })
